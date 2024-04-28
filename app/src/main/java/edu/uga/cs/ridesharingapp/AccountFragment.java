@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class AccountFragment extends Fragment {
 
@@ -23,6 +25,10 @@ public class AccountFragment extends Fragment {
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     // Registration successful
+                    // Assign initial ride-points here
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference ref = database.getReference("users").child(auth.getCurrentUser().getUid());
+                    ref.child("ridePoints").setValue(50); // Assuming 50 is the initial points
                 } else {
                     // Handle errors (e.g., email format, duplicate email)
                 }

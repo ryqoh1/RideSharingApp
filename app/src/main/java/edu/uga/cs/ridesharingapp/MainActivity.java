@@ -1,6 +1,7 @@
 package edu.uga.cs.ridesharingapp;
 
 import android.os.Bundle;
+import android.content.res.Configuration;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;

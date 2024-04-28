@@ -15,5 +15,27 @@ public class RideRequestsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_ride_requests, container, false);
     }
-}
 
+    public void fetchRides() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("rides");
+        ref.orderByChild("date").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Handle fetched rides
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Handle possible errors
+            }
+        });
+    }
+
+    public void acceptRideOffer(String rideId, String riderId) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("rideOffers").child(rideId);
+        ref.child("acceptedBy").setValue(riderId);
+        // Move to accepted rides and adjust points
+    }
+}

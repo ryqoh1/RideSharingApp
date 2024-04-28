@@ -32,9 +32,23 @@ public class RideOffersFragment extends Fragment {
         });
     }
 
-    public void postRide(Ride ride) {
+    public void postRideOffer(Ride ride) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("rides");
+        DatabaseReference ref = database.getReference("rideOffers");
         ref.push().setValue(ride);
+    }
+    
+    public void acceptRideOffer(String rideId, String riderId) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("rideOffers").child(rideId);
+        ref.child("acceptedBy").setValue(riderId);
+        // Move to accepted rides and adjust points
+    }
+
+    public void confirmRide(String rideId, String driverId, String riderId) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("confirmedRides");
+        ref.child(rideId).setValue(new ConfirmedRide(driverId, riderId));
+        // Adjust points: increment for driver, decrement for rider
     }
 }
