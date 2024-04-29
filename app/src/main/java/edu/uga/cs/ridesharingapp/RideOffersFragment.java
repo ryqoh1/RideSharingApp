@@ -8,6 +8,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 public class RideOffersFragment extends Fragment {
 
     @Nullable
@@ -48,7 +54,7 @@ public class RideOffersFragment extends Fragment {
     public void confirmRide(String rideId, String driverId, String riderId) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("confirmedRides");
-        ref.child(rideId).setValue(new ConfirmedRide(driverId, riderId));
+        ref.child(rideId).setValue(new ConfirmedRide(driverId, riderId, "", 0, ""));
         // Adjust points: increment for driver, decrement for rider
     }
 }
