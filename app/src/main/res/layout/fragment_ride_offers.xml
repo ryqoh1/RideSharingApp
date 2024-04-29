@@ -6,22 +6,28 @@
     android:padding="16dp">
 
     <EditText
-        android:id="@+id/destinationInput"
+        android:id="@+id/editTextDestination"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Destination"/>
 
     <EditText
-        android:id="@+id/dateInput"
+        android:id="@+id/editTextDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Date (yyyy-mm-dd)"/>
 
 
     <Button
-        android:id="@+id/submitOfferButton"
+        android:id="@+id/buttonSubmitRideOffer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Submit Offer"/>
+        android:layout_marginBottom="36dp"
+        android:text="Submit Offer" />
 
+    <ListView
+        android:id="@+id/listViewRideOffers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+        
 </LinearLayout>

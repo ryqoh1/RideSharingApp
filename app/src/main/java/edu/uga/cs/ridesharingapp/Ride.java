@@ -1,6 +1,7 @@
 package edu.uga.cs.ridesharingapp;
 
 public class Ride {
+    private String rideId;
     private String userId;
     private String destination;
     private String date;
@@ -19,6 +20,10 @@ public class Ride {
     }
 
     // Getters
+    public String getRideId() { // Getter for rideId
+        return rideId;
+    }
+
     public String getUserId() {
         return userId;
     }
@@ -44,6 +49,10 @@ public class Ride {
     }
 
     // Setters
+    public void setRideId(String rideId) { 
+        this.rideId = rideId; 
+    }
+
     public void setUserId(String userId) {
         this.userId = userId;
     }
