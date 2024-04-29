@@ -6,9 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class AccountFragment extends Fragment {
@@ -37,21 +39,22 @@ public class AccountFragment extends Fragment {
     public void resetPassword(String emailAddress) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         auth.sendPasswordResetEmail(emailAddress)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        // Notify user that reset email was sent
-                        // You could update UI here or show a message
-                    } else {
-                        // Handle errors (e.g., invalid email)
-                        // Display error message to the user
-                    }
-                });
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(getActivity(), "Reset password email sent.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getActivity(), "Failed to send reset email.", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
 
     public void logoutUser() {
         FirebaseAuth.getInstance().signOut();
-        // User is now logged out
+        // Redirect to LoginActivity or another appropriate activity
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
+        startActivity(intent);
     }
 }
 
