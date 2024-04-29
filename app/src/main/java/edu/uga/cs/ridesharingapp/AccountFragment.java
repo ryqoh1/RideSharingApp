@@ -4,19 +4,33 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class AccountFragment extends Fragment {
+
+    private EditText emailInput; // For password reset
+    private Button resetPasswordButton;
+    private Button logoutButton;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_account, container, false);
+        View view = inflater.inflate(R.layout.fragment_account, container, false);
+
+        // Initialize views
+        emailInput = view.findViewById(R.id.etEmailForReset);
+        resetPasswordButton = view.findViewById(R.id.btnResetPassword);
+        logoutButton = view.findViewById(R.id.btnLogOut);
+
+        resetPasswordButton.setOnClickListener(v -> resetPassword(emailInput.getText().toString()));
+        logoutButton.setOnClickListener(v -> logoutUser());
+
+        return view;
     }
 
 

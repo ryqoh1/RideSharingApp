@@ -1,11 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp">
 
-    <TextView
+    <!-- Reset Password Section -->
+    <EditText
+        android:id="@+id/etEmailForReset"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter email to reset password"
+        android:inputType="textEmailAddress" />
+
+    <Button
+        android:id="@+id/btnResetPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Account Fragment"
-        android:layout_gravity="center" />
-</FrameLayout>
+        android:text="Reset Password" />
+
+    <!-- Log Out Button -->
+    <Button
+        android:id="@+id/btnLogOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log Out" />
+
+</LinearLayout>
+
