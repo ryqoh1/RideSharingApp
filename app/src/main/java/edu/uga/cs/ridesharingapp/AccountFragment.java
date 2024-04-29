@@ -47,8 +47,24 @@ public class AccountFragment extends Fragment {
             });
     }
 
+    public void resetPassword(String emailAddress) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.sendPasswordResetEmail(emailAddress)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Notify user that reset email was sent
+                        // You could update UI here or show a message
+                    } else {
+                        // Handle errors (e.g., invalid email)
+                        // Display error message to the user
+                    }
+                });
+    }
+
+
     public void logoutUser() {
         FirebaseAuth.getInstance().signOut();
         // User is now logged out
     }
 }
+
