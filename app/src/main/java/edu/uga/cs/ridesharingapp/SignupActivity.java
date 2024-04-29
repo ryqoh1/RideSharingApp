@@ -47,7 +47,6 @@ public class SignupActivity extends AppCompatActivity {
                             Map<String, Object> userData = new HashMap<>();
                             userData.put("email", email);
                             userData.put("ridePoints", 50); // Assuming 50 is the initial points
-                            userData.put("role", "rider"); // or "rider", depending on context
 
                             usersRef.setValue(userData)
                                 .addOnSuccessListener(aVoid -> {

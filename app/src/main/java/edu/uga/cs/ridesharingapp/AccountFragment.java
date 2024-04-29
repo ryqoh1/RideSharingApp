@@ -6,18 +6,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class AccountFragment extends Fragment {
 
     private EditText emailInput; // For password reset
     private Button resetPasswordButton;
     private Button logoutButton;
+    private TextView ridePointsTextView;
 
     @Nullable
     @Override
@@ -28,13 +35,36 @@ public class AccountFragment extends Fragment {
         emailInput = view.findViewById(R.id.etEmailForReset);
         resetPasswordButton = view.findViewById(R.id.btnResetPassword);
         logoutButton = view.findViewById(R.id.btnLogOut);
+        ridePointsTextView = view.findViewById(R.id.tvRidePoints);
 
         resetPasswordButton.setOnClickListener(v -> resetPassword(emailInput.getText().toString()));
         logoutButton.setOnClickListener(v -> logoutUser());
 
+        loadRidePoints();
+
         return view;
     }
 
+    private void loadRidePoints() {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        String userId = auth.getCurrentUser().getUid();
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("ridePoints");
+
+        databaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Integer ridePoints = dataSnapshot.getValue(Integer.class);
+                    ridePointsTextView.setText("Ride Points: " + ridePoints);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getActivity(), "Failed to load ride points.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     public void resetPassword(String emailAddress) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -48,13 +78,10 @@ public class AccountFragment extends Fragment {
             });
     }
 
-
     public void logoutUser() {
         FirebaseAuth.getInstance().signOut();
-        // Redirect to LoginActivity or another appropriate activity
         Intent intent = new Intent(getActivity(), LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 }
-
