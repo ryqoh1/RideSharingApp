@@ -60,7 +60,11 @@ public class RideOffersFragment extends Fragment {
             String userId = user.getUid();
             Ride ride = new Ride(userId, destination, date, 50, "open"); // Assuming points are not needed at creation
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideOffers");
-            ref.push().setValue(ride);
+            String rideId = ref.push().getKey();
+            if (rideId != null) {
+                ride.setRideId(rideId);  // Set the rideId in your Ride object
+                ref.child(rideId).setValue(ride);  // Use the rideId as a key for your new ride offer
+            }
         } else {
             Toast.makeText(getContext(), "You must fill all fields.", Toast.LENGTH_LONG).show();
         }
@@ -75,16 +79,22 @@ public class RideOffersFragment extends Fragment {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Ride ride = snapshot.getValue(Ride.class);
                     if (ride != null) {
+                        ride.setRideId(snapshot.getKey());
                         rideOffers.add(ride);
                     }
                 }
-                RideOfferAdapter adapter = new RideOfferAdapter(getContext(), R.layout.ride_offer_item, rideOffers);
-                listView.setAdapter(adapter);
+                // Check context is still valid (not null)
+                if (getContext() != null) {
+                    RideOfferAdapter adapter = new RideOfferAdapter(getContext(), R.layout.ride_offer_item, rideOffers);
+                    listView.setAdapter(adapter);
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getContext(), "Failed to load ride offers.", Toast.LENGTH_SHORT).show();
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Failed to load ride offers.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -145,7 +155,9 @@ public class RideOffersFragment extends Fragment {
                 buttonAccept.setEnabled(true);
                 buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.holo_purple));
                 buttonAccept.setOnClickListener(v -> {
-                    acceptRideOffer(ride.getRideId());
+                    if(ride.getRideId() != null) {
+                        acceptRideOffer(ride.getRideId());
+                    }
                 });
             }
 
