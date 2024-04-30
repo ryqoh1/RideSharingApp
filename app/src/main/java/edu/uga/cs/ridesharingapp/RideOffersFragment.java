@@ -109,11 +109,16 @@ public class RideOffersFragment extends Fragment {
     class RideOfferAdapter extends ArrayAdapter<Ride> {
         private Context context;
         private List<Ride> rideOffers;
+        private String currentUserId;
 
         public RideOfferAdapter(@NonNull Context context, int resource, @NonNull List<Ride> objects) {
             super(context, resource, objects);
             this.context = context;
             this.rideOffers = objects;
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+                this.currentUserId = user.getUid();
+            }
         }
 
         @NonNull
@@ -133,9 +138,16 @@ public class RideOffersFragment extends Fragment {
             textViewDestination.setText(ride.getDestination());
             textViewStatus.setText(ride.getStatus());
 
-            buttonAccept.setOnClickListener(v -> {
-                acceptRideOffer(ride.getRideId());
-            });
+            if (ride.getUserId().equals(currentUserId)) {
+                buttonAccept.setEnabled(false);
+                buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.darker_gray));
+            } else {
+                buttonAccept.setEnabled(true);
+                buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.holo_purple));
+                buttonAccept.setOnClickListener(v -> {
+                    acceptRideOffer(ride.getRideId());
+                });
+            }
 
             return convertView;
         }

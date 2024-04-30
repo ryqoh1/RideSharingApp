@@ -88,11 +88,16 @@ public class RideRequestsFragment extends Fragment {
     class RideRequestAdapter extends ArrayAdapter<Ride> {
         private Context context;
         private List<Ride> rideRequests;
+        private String currentUserId;
 
         public RideRequestAdapter(@NonNull Context context, int resource, @NonNull List<Ride> objects) {
             super(context, resource, objects);
             this.context = context;
             this.rideRequests = objects;
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+                this.currentUserId = user.getUid();
+            }
         }
 
         @NonNull
@@ -105,11 +110,20 @@ public class RideRequestsFragment extends Fragment {
             TextView textViewDate = convertView.findViewById(R.id.textViewDate);
             TextView textViewDestination = convertView.findViewById(R.id.textViewDestination);
             TextView textViewStatus = convertView.findViewById(R.id.textViewStatus);
+            Button buttonAccept = convertView.findViewById(R.id.buttonAccept);
 
             Ride ride = rideRequests.get(position);
             textViewDate.setText(ride.getDate());
             textViewDestination.setText(ride.getDestination());
             textViewStatus.setText(ride.getStatus());
+
+            if (ride.getUserId().equals(currentUserId)) {
+                buttonAccept.setEnabled(false);
+                buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.darker_gray));
+            } else {
+                buttonAccept.setEnabled(true);
+                buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.holo_purple));
+            }
 
             return convertView;
         }
