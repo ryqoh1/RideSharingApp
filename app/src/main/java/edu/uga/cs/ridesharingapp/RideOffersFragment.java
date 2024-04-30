@@ -94,8 +94,19 @@ public class RideOffersFragment extends Fragment {
         if (user != null) {
             String userId = user.getUid();
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideOffers").child(rideId);
-            ref.child("status").setValue("accepted");
-            ref.child("acceptedBy").setValue(userId);
+            
+            // Update the ride offer to include the 'acceptedBy' field and change the status
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("status", "accepted");
+            updates.put("acceptedBy", userId);
+            
+            ref.updateChildren(updates).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(getContext(), "Ride offer accepted.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Failed to accept ride offer.", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -148,6 +159,10 @@ public class RideOffersFragment extends Fragment {
                     acceptRideOffer(ride.getRideId());
                 });
             }
+
+            buttonAccept.setOnClickListener(v -> {
+                acceptRideOffer(ride.getRideId());
+            });
 
             return convertView;
         }
