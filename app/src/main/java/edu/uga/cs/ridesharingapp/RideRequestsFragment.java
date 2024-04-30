@@ -25,7 +25,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RideRequestsFragment extends Fragment {
 
@@ -56,7 +58,11 @@ public class RideRequestsFragment extends Fragment {
             String userId = user.getUid();
             Ride ride = new Ride(userId, destination, date, 50, "open"); // Assuming points are not needed at creation
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideRequests");
-            ref.push().setValue(ride);
+            String rideId = ref.push().getKey();
+            if (rideId != null) {
+                ride.setRideId(rideId);  // Set the rideId in your Ride object
+                ref.child(rideId).setValue(ride);  // Use the rideId as a key for your new ride request
+            }
         } else {
             Toast.makeText(getContext(), "You must fill all fields.", Toast.LENGTH_LONG).show();
         }
@@ -64,18 +70,21 @@ public class RideRequestsFragment extends Fragment {
 
     private void fetchAndDisplayRideRequests(ListView listView) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideRequests");
-        ref.addValueEventListener(new ValueEventListener() {
+        ref.orderByChild("status").equalTo("open").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 List<Ride> rideRequests = new ArrayList<>();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Ride ride = snapshot.getValue(Ride.class);
                     if (ride != null) {
+                        ride.setRideId(snapshot.getKey());
                         rideRequests.add(ride);
                     }
                 }
-                RideRequestAdapter adapter = new RideRequestAdapter(getContext(), R.layout.ride_offer_item, rideRequests);
-                listView.setAdapter(adapter);
+                if (getContext() != null) {
+                    RideRequestAdapter adapter = new RideRequestAdapter(getContext(), R.layout.ride_request_item, rideRequests);
+                    listView.setAdapter(adapter);
+                }
             }
 
             @Override
@@ -83,6 +92,34 @@ public class RideRequestsFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to load ride requests.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void acceptRideRequest(String rideId) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideRequests").child(rideId);
+            
+            // Update the ride request to include the 'acceptedBy' field and change the status
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("status", "accepted");
+            updates.put("acceptedBy", userId);
+            
+            ref.updateChildren(updates).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(getContext(), "Ride request accepted.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Failed to accept ride request.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    public void confirmRide(String rideId, String driverId, String riderId) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference("confirmedRides");
+        ref.child(rideId).setValue(new ConfirmedRide(driverId, riderId, "", 0, ""));
+        // Adjust points: increment for driver, decrement for rider
     }
 
     class RideRequestAdapter extends ArrayAdapter<Ride> {
@@ -104,7 +141,7 @@ public class RideRequestsFragment extends Fragment {
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             if (convertView == null) {
-                convertView = LayoutInflater.from(context).inflate(R.layout.ride_offer_item, parent, false);
+                convertView = LayoutInflater.from(context).inflate(R.layout.ride_request_item, parent, false);
             }
 
             TextView textViewDate = convertView.findViewById(R.id.textViewDate);
@@ -123,7 +160,16 @@ public class RideRequestsFragment extends Fragment {
             } else {
                 buttonAccept.setEnabled(true);
                 buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.holo_purple));
+                buttonAccept.setOnClickListener(v -> {
+                    if(ride.getRideId() != null) {
+                        acceptRideRequest(ride.getRideId());
+                    }
+                });
             }
+
+            buttonAccept.setOnClickListener(v -> {
+                acceptRideRequest(ride.getRideId());
+            });
 
             return convertView;
         }
