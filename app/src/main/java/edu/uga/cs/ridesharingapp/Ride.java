@@ -48,6 +48,12 @@ public class Ride {
         return acceptedBy;
     }
 
+    @Override
+    public String toString() {
+        // Format the string as you'd like to display in the ListView
+        return "Date: " + date + "\nDestination: " + destination + "\nStatus: " + status;
+    }
+
     // Setters
     public void setRideId(String rideId) { 
         this.rideId = rideId; 
