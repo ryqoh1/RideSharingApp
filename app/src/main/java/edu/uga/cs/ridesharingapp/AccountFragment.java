@@ -18,20 +18,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.auth.FirebaseUser;
+
 
 public class AccountFragment extends Fragment {
 
-    private EditText emailInput; // For password reset
-    private Button resetPasswordButton;
-    private Button logoutButton;
+    private EditText emailInput;
+    private Button resetPasswordButton, logoutButton;
     private TextView ridePointsTextView;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
-
-        // Initialize views
         emailInput = view.findViewById(R.id.etEmailForReset);
         resetPasswordButton = view.findViewById(R.id.btnResetPassword);
         logoutButton = view.findViewById(R.id.btnLogOut);
@@ -41,47 +40,56 @@ public class AccountFragment extends Fragment {
         logoutButton.setOnClickListener(v -> logoutUser());
 
         loadRidePoints();
-
         return view;
     }
 
     private void loadRidePoints() {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        String userId = auth.getCurrentUser().getUid();
-        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("ridePoints");
-
-        databaseRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    Integer ridePoints = dataSnapshot.getValue(Integer.class);
-                    ridePointsTextView.setText("Ride Points: " + ridePoints);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid(); // Correctly declared and initialized
+            DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("users")
+                    .child(userId).child("ridePoints");
+            databaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists() && isAdded()) {
+                        Integer points = dataSnapshot.getValue(Integer.class);
+                        ridePointsTextView.setText("Ride Points: " + (points != null ? points.toString() : "0"));
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getActivity(), "Failed to load ride points.", Toast.LENGTH_SHORT).show();
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    if (isAdded()) {
+                        Toast.makeText(getActivity(), "Failed to load ride points.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else {
+            if (isAdded()) {
+                Toast.makeText(getActivity(), "User is not logged in.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    private void resetPassword(String emailAddress) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.sendPasswordResetEmail(emailAddress).addOnCompleteListener(task -> {
+            if (task.isSuccessful() && isAdded()) {
+                Toast.makeText(getActivity(), "Reset password email sent.", Toast.LENGTH_SHORT).show();
+            } else if (isAdded()) {
+                Toast.makeText(getActivity(), "Failed to send reset email.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    public void resetPassword(String emailAddress) {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        auth.sendPasswordResetEmail(emailAddress)
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    Toast.makeText(getActivity(), "Reset password email sent.", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getActivity(), "Failed to send reset email.", Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
-    public void logoutUser() {
+    private void logoutUser() {
         FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(getActivity(), LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        if (isAdded()) {
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
     }
 }
