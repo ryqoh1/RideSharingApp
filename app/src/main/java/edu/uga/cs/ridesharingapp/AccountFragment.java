@@ -42,6 +42,11 @@ public class AccountFragment extends Fragment {
         loadRidePoints();
         return view;
     }
+    private void showToastMessage(String message) {
+        if (isAdded() && getActivity() != null) {
+            Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+        }
+    }
 
     private void loadRidePoints() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -61,25 +66,24 @@ public class AccountFragment extends Fragment {
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     if (isAdded()) {
-                        Toast.makeText(getActivity(), "Failed to load ride points.", Toast.LENGTH_SHORT).show();
+                        showToastMessage("Failed to load ride points.");
                     }
                 }
-            });
-        } else {
-            if (isAdded()) {
-                Toast.makeText(getActivity(), "User is not logged in.", Toast.LENGTH_SHORT).show();
+                });
+            } else {
+                showToastMessage("User is not logged in.");
             }
         }
-    }
 
 
-    private void resetPassword(String emailAddress) {
+
+    public void resetPassword(String emailAddress) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         auth.sendPasswordResetEmail(emailAddress).addOnCompleteListener(task -> {
-            if (task.isSuccessful() && isAdded()) {
-                Toast.makeText(getActivity(), "Reset password email sent.", Toast.LENGTH_SHORT).show();
-            } else if (isAdded()) {
-                Toast.makeText(getActivity(), "Failed to send reset email.", Toast.LENGTH_SHORT).show();
+            if (task.isSuccessful()) {
+                showToastMessage("Reset password email sent.");
+            } else {
+                showToastMessage("Failed to send reset email.");
             }
         });
     }
