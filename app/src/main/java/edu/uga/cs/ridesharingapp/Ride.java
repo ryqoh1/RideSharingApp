@@ -8,6 +8,8 @@ public class Ride {
     private int points;
     private String status; // "open", "accepted", "completed"
     private String acceptedBy; // Optional, only if accepted
+    private String confirmedBy_1; // Optional, only if confirmed
+    private String confirmedBy_2; // Optional, only if confirmed
 
     public Ride() {}
 
@@ -20,6 +22,14 @@ public class Ride {
     }
 
     // Getters
+    public String getConfirmedBy_1() {
+        return confirmedBy_1;
+    }
+
+    public String getConfirmedBy_2() {
+        return confirmedBy_2;
+    }
+
     public String getRideId() { // Getter for rideId
         return rideId;
     }

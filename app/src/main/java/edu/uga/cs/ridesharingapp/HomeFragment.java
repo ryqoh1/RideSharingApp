@@ -20,9 +20,14 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import androidx.annotation.Nullable;
 
 
@@ -79,6 +84,128 @@ public class HomeFragment extends Fragment {
             // Add the listeners to both references
             refOffers.addValueEventListener(listener);
             refRequests.addValueEventListener(listener);
+        }
+    }
+
+    public void confirmRideOffer(String rideId, Button confirmButton, boolean isRideOffer) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference(isRideOffer ? "rideOffers" : "rideRequests").child(rideId);
+            
+            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Ride ride = dataSnapshot.getValue(Ride.class);
+                    if (ride != null) {
+                        Map<String, Object> updates = new HashMap<>();
+                        final boolean[] updatePoints = new boolean[1]; // Use an array to hold the boolean
+                        if (ride.getConfirmedBy_1() == null) {
+                            updates.put("confirmedBy_1", userId);
+                        } else if (ride.getConfirmedBy_2() == null) {
+                            updates.put("confirmedBy_2", userId);
+                            updatePoints[0] = true; // Points should be updated only after the second confirmation
+                        } else {
+                            Toast.makeText(getContext(), "Ride already fully confirmed.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        
+                        ref.updateChildren(updates).addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(getContext(), "Ride offer confirmed.", Toast.LENGTH_SHORT).show();
+                                // Disable the confirm button
+                                confirmButton.setEnabled(false);
+                                confirmButton.setBackgroundColor(getContext().getResources().getColor(android.R.color.darker_gray));
+                                if (updatePoints[0]) {
+                                    adjustUserPoints(ride, isRideOffer);
+                                }
+                            } else {
+                                Toast.makeText(getContext(), "Failed to confirm ride offer.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+                
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(getContext(), "Failed to read ride data.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+    
+    private void adjustUserPoints(Ride ride, boolean isRideOffer) {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+        String acceptedBy = ride.getAcceptedBy();
+        String rideOwner = ride.getUserId();
+        
+        // Adjust points for ride offers
+        if (isRideOffer) {
+            usersRef.child(acceptedBy).child("ridePoints").runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData mutableData) {
+                    Integer currentPoints = mutableData.getValue(Integer.class);
+                    if (currentPoints == null) {
+                        return Transaction.success(mutableData);
+                    }
+                    mutableData.setValue(currentPoints - 50);
+                    return Transaction.success(mutableData);
+                }
+                
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean committed, DataSnapshot dataSnapshot) {
+                    // Handle completion
+                }
+            });
+            usersRef.child(rideOwner).child("ridePoints").runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData mutableData) {
+                    Integer currentPoints = mutableData.getValue(Integer.class);
+                    if (currentPoints == null) {
+                        return Transaction.success(mutableData);
+                    }
+                    mutableData.setValue(currentPoints + 50);
+                    return Transaction.success(mutableData);
+                }
+                
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean committed, DataSnapshot dataSnapshot) {
+                    // Handle completion
+                }
+            });
+        } else { // Adjust points for ride requests
+            usersRef.child(acceptedBy).child("ridePoints").runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData mutableData) {
+                    Integer currentPoints = mutableData.getValue(Integer.class);
+                    if (currentPoints == null) {
+                        return Transaction.success(mutableData);
+                    }
+                    mutableData.setValue(currentPoints + 50); // Increment for the user who accepted the ride
+                    return Transaction.success(mutableData);
+                }
+                
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean committed, DataSnapshot dataSnapshot) {
+                    // Handle completion
+                }
+            });
+            usersRef.child(rideOwner).child("ridePoints").runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData mutableData) {
+                    Integer currentPoints = mutableData.getValue(Integer.class);
+                    if (currentPoints == null) {
+                        return Transaction.success(mutableData);
+                    }
+                    mutableData.setValue(currentPoints - 50); // Decrement for the ride owner
+                    return Transaction.success(mutableData);
+                }
+                
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean committed, DataSnapshot dataSnapshot) {
+                    // Handle completion
+                }
+            });
         }
     }
 
