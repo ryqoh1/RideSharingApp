@@ -147,7 +147,7 @@ public class RideRequestsFragment extends Fragment {
             TextView textViewDate = convertView.findViewById(R.id.textViewDate);
             TextView textViewDestination = convertView.findViewById(R.id.textViewDestination);
             TextView textViewStatus = convertView.findViewById(R.id.textViewStatus);
-            Button buttonAccept = convertView.findViewById(R.id.buttonAccept);
+            Button buttonAction = convertView.findViewById(R.id.buttonAccept); // Rename to buttonAction for generic use
 
             Ride ride = rideRequests.get(position);
             textViewDate.setText(ride.getDate());
@@ -155,23 +155,32 @@ public class RideRequestsFragment extends Fragment {
             textViewStatus.setText(ride.getStatus());
 
             if (ride.getUserId().equals(currentUserId)) {
-                buttonAccept.setEnabled(false);
-                buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.darker_gray));
+                buttonAction.setText("Delete");
+                buttonAction.setBackgroundColor(context.getResources().getColor(android.R.color.holo_red_dark));
+                buttonAction.setOnClickListener(v -> {
+                    deleteRideRequest(ride.getRideId());
+                });
             } else {
-                buttonAccept.setEnabled(true);
-                buttonAccept.setBackgroundColor(context.getResources().getColor(android.R.color.holo_purple));
-                buttonAccept.setOnClickListener(v -> {
-                    if(ride.getRideId() != null) {
-                        acceptRideRequest(ride.getRideId());
-                    }
+                buttonAction.setText("Accept");
+                buttonAction.setEnabled(true);
+                buttonAction.setBackgroundColor(context.getResources().getColor(android.R.color.holo_purple));
+                buttonAction.setOnClickListener(v -> {
+                    acceptRideRequest(ride.getRideId());
                 });
             }
 
-            buttonAccept.setOnClickListener(v -> {
-                acceptRideRequest(ride.getRideId());
-            });
-
             return convertView;
+        }
+
+        private void deleteRideRequest(String rideId) {
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideRequests").child(rideId);
+            ref.removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Ride request deleted.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "Failed to delete ride request.", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }
