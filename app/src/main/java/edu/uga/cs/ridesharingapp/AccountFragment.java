@@ -27,6 +27,14 @@ public class AccountFragment extends Fragment {
     private Button resetPasswordButton, logoutButton;
     private TextView ridePointsTextView;
 
+    /**
+     * Inflates the layout for this fragment, initializes UI components, and sets up event listeners.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment.
+     * @param container If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state.
+     * @return The View for the inflated fragment's layout.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -42,12 +50,21 @@ public class AccountFragment extends Fragment {
         loadRidePoints();
         return view;
     }
+
+    /**
+     * Displays a toast message if the fragment is currently added to its activity.
+     *
+     * @param message The message to display in the toast.
+     */
     private void showToastMessage(String message) {
         if (isAdded() && getActivity() != null) {
             Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
         }
     }
 
+    /**
+     * Loads and displays the user's ride points from Firebase.
+     */
     private void loadRidePoints() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -75,8 +92,11 @@ public class AccountFragment extends Fragment {
             }
         }
 
-
-
+    /**
+     * Sends a password reset email to the user.
+     *
+     * @param emailAddress The email address to which the reset password email will be sent.
+     */
     public void resetPassword(String emailAddress) {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         auth.sendPasswordResetEmail(emailAddress).addOnCompleteListener(task -> {
@@ -88,6 +108,9 @@ public class AccountFragment extends Fragment {
         });
     }
 
+    /**
+     * Logs out the user and redirects to the login activity.
+     */
     private void logoutUser() {
         FirebaseAuth.getInstance().signOut();
         if (isAdded()) {

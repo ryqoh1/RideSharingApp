@@ -52,6 +52,12 @@ public class RideRequestsFragment extends Fragment {
         fetchAndDisplayRideRequests(listViewRideRequests);
     }
 
+    /**
+     * Posts a new ride request to Firebase database.
+     *
+     * @param date The date of the ride request.
+     * @param destination The destination of the ride request.
+     */
     private void postRideRequest(String date, String destination) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null && !date.isEmpty() && !destination.isEmpty()) {
@@ -67,7 +73,12 @@ public class RideRequestsFragment extends Fragment {
             Toast.makeText(getContext(), "You must fill all fields.", Toast.LENGTH_LONG).show();
         }
     }
-
+    
+    /**
+     * Fetches and displays open ride requests from Firebase database.
+     *
+     * @param listView The ListView to display the ride requests.
+     */
     private void fetchAndDisplayRideRequests(ListView listView) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideRequests");
         ref.orderByChild("status").equalTo("open").addValueEventListener(new ValueEventListener() {
@@ -94,6 +105,11 @@ public class RideRequestsFragment extends Fragment {
         });
     }
 
+    /**
+     * Accepts a ride request by updating its status in the Firebase database.
+     *
+     * @param rideId The unique identifier of the ride request to be accepted.
+     */
     public void acceptRideRequest(String rideId) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -115,6 +131,13 @@ public class RideRequestsFragment extends Fragment {
         }
     }
 
+    /**
+     * Confirms a ride by creating a confirmed ride entry in the Firebase database.
+     *
+     * @param rideId The unique identifier of the ride.
+     * @param driverId The unique identifier of the driver.
+     * @param riderId The unique identifier of the rider.
+     */
     public void confirmRide(String rideId, String driverId, String riderId) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("confirmedRides");
@@ -122,6 +145,9 @@ public class RideRequestsFragment extends Fragment {
         // Adjust points: increment for driver, decrement for rider
     }
 
+    /**
+     * Custom ArrayAdapter for displaying ride requests in a ListView.
+     */
     class RideRequestAdapter extends ArrayAdapter<Ride> {
         private Context context;
         private List<Ride> rideRequests;
@@ -137,6 +163,14 @@ public class RideRequestsFragment extends Fragment {
             }
         }
 
+        /**
+         * Provides a view for an AdapterView (ListView, GridView, etc.)
+         *
+         * @param position The position in the list of data that should be displayed in the list item view.
+         * @param convertView The old view to reuse, if possible.
+         * @param parent The parent that this view will eventually be attached to.
+         * @return A View corresponding to the data at the specified position.
+         */
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -172,6 +206,11 @@ public class RideRequestsFragment extends Fragment {
             return convertView;
         }
 
+        /**
+         * Deletes a ride request from the Firebase database.
+         *
+         * @param rideId The unique identifier of the ride request to be deleted.
+         */
         private void deleteRideRequest(String rideId) {
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideRequests").child(rideId);
             ref.removeValue().addOnCompleteListener(task -> {

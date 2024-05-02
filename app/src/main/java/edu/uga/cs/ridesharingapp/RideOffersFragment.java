@@ -54,6 +54,12 @@ public class RideOffersFragment extends Fragment {
         fetchAndDisplayRideOffers(listViewRideOffers);
     }
 
+    /**
+     * Posts a new ride offer to Firebase database.
+     *
+     * @param date The date of the ride offer.
+     * @param destination The destination of the ride offer.
+     */
     private void postRideOffer(String date, String destination) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null && !date.isEmpty() && !destination.isEmpty()) {
@@ -70,6 +76,11 @@ public class RideOffersFragment extends Fragment {
         }
     }
 
+    /**
+     * Fetches and displays open ride offers from Firebase database.
+     *
+     * @param listView The ListView to display the ride offers.
+     */
     private void fetchAndDisplayRideOffers(ListView listView) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideOffers");
         ref.orderByChild("status").equalTo("open").addValueEventListener(new ValueEventListener() {
@@ -99,6 +110,11 @@ public class RideOffersFragment extends Fragment {
         });
     }
 
+    /**
+     * Accepts a ride offer by updating its status in the Firebase database.
+     *
+     * @param rideId The unique identifier of the ride offer to be accepted.
+     */
     public void acceptRideOffer(String rideId) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -120,6 +136,13 @@ public class RideOffersFragment extends Fragment {
         }
     }
 
+    /**
+     * Confirms a ride by creating a confirmed ride entry in the Firebase database.
+     *
+     * @param rideId The unique identifier of the ride.
+     * @param driverId The unique identifier of the driver.
+     * @param riderId The unique identifier of the rider.
+     */
     public void confirmRide(String rideId, String driverId, String riderId) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("confirmedRides");
@@ -127,6 +150,9 @@ public class RideOffersFragment extends Fragment {
         // Adjust points: increment for driver, decrement for rider
     }
 
+    /**
+     * Custom ArrayAdapter for displaying ride offers in a ListView.
+     */
     class RideOfferAdapter extends ArrayAdapter<Ride> {
         private Context context;
         private List<Ride> rideOffers;
@@ -177,6 +203,11 @@ public class RideOffersFragment extends Fragment {
             return convertView;
         }
 
+        /**
+         * Deletes a ride offer from the Firebase database.
+         *
+         * @param rideId The unique identifier of the ride offer to be deleted.
+         */
         private void deleteRideOffer(String rideId) {
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference("rideOffers").child(rideId);
             ref.removeValue().addOnCompleteListener(task -> {

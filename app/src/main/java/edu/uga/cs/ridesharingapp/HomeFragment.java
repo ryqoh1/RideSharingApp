@@ -36,6 +36,14 @@ public class HomeFragment extends Fragment {
     private ArrayAdapter<Ride> adapter;
     private List<Ride> acceptedRidesList = new ArrayList<>();
 
+    /**
+     * Inflates the layout for this fragment and initializes UI components.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment.
+     * @param container If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state.
+     * @return The View for the inflated fragment's layout.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -51,6 +59,9 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Fetches accepted rides from Firebase and updates the ListView.
+     */
     private void fetchAcceptedRides() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -87,6 +98,13 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    /**
+     * Confirms a ride offer or request by updating its status in Firebase and potentially adjusting user points.
+     *
+     * @param rideId The unique identifier of the ride.
+     * @param confirmButton The button used to trigger the confirmation, which will be disabled after confirmation.
+     * @param isRideOffer Indicates whether the ride is an offer or a request.
+     */
     public void confirmRideOffer(String rideId, Button confirmButton, boolean isRideOffer) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -134,6 +152,12 @@ public class HomeFragment extends Fragment {
         }
     }
     
+    /**
+     * Adjusts user points based on the confirmation of a ride offer or request.
+     *
+     * @param ride The Ride object containing details about the ride.
+     * @param isRideOffer Indicates whether the ride is an offer or a request.
+     */
     private void adjustUserPoints(Ride ride, boolean isRideOffer) {
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
         String acceptedBy = ride.getAcceptedBy();
@@ -209,6 +233,9 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    /**
+     * Custom ArrayAdapter for displaying rides in a ListView.
+     */
     class RideAdapter extends ArrayAdapter<Ride> {
         private Context context;
         private List<Ride> rides;
@@ -219,6 +246,14 @@ public class HomeFragment extends Fragment {
             this.rides = rides;
         }
 
+        /**
+         * Provides a view for an AdapterView (ListView, GridView, etc.)
+         *
+         * @param position The position in the list of data that should be displayed in the list item view.
+         * @param convertView The old view to reuse, if possible.
+         * @param parent The parent that this view will eventually be attached to.
+         * @return A View corresponding to the data at the specified position.
+         */
         @NonNull
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
